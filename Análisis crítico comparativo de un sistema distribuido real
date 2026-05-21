@@ -1,0 +1,279 @@
+\documentclass[12pt,a4paper]{article}
+
+% ─── Paquetes Básicos y Estándar ────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs} % Para tablas limpias con \toprule, \midrule, \bottomrule
+\usepackage{array}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{amsmath}
+
+% ─── Geometría de la Página ──────────────────────────────────────────────────
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=3cm,  right=2.5cm
+}
+
+% ─── Espaciado Estándar ──────────────────────────────────────────────────────
+\setstretch{1.15}
+\setlength{\parskip}{6pt}
+
+% ════════════════════════════════════════════════════════════════════════════
+\begin{document}
+% ════════════════════════════════════════════════════════════════════════════
+
+% ─── Portada Sencilla y Formal ──────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\Large\bfseries ANÁLISIS CRÍTICO COMPARATIVO\\DE UN SISTEMA DISTRIBUIDO REAL\par}
+
+  \vspace{0.8cm}
+  \hrule height 1pt
+  \vspace{0.5cm}
+
+  {\large\bfseries Uber: Coordinación en Tiempo Real como Sistema Distribuido a Escala Global\par}
+
+  \vspace{0.5cm}
+  \hrule height 1pt
+  \vspace{1.5cm}
+
+  \textbf{Asignatura:} Sistemas Distribuidos\\[6pt]
+  \textbf{Unidad:} 1 -- Fundamentos de Sistemas Distribuidos\\[6pt]
+  \textbf{Tipo de actividad:} Trabajo Autónomo Sumativo (Individual)\\
+
+  \vspace{2cm}
+
+  \textbf{Estudiante:}\\[4pt]
+  Luna Mora Ernesto Gregory\\[25pt]
+
+  \textbf{Docente:}\\[4pt]
+  Guerrero Ulloa Glesiton Ciceron\\
+
+  \vfill
+
+  Universidad Técnica Estatal de Quevedo\\[4pt]
+  Facultad de Ciencias de la Computación y Diseño Digital\\[8pt]
+  2026
+
+\end{titlepage}
+
+% ─── Índice ─────────────────────────────────────────────────────────────────
+\newpage
+\tableofcontents
+\newpage
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Introducción}
+% ════════════════════════════════════════════════════════════════════════════
+
+En la última década, la irrupción de las plataformas de movilidad bajo demanda ha planteado desafíos de ingeniería sin precedentes. Uber, fundada en 2009 en San Francisco, opera actualmente en más de 70 países y gestiona decenas de millones de viajes diarios, lo que la convierte en uno de los sistemas distribuidos a mayor escala del mundo. Su arquitectura debe garantizar la coordinación en tiempo real entre conductores, pasajeros y sistemas de pago, todo ello con latencias de milisegundos y disponibilidad cercana al 100~\%.
+
+El presente trabajo analiza de forma crítica la arquitectura distribuida de Uber aplicando los conceptos centrales de la Unidad~1: las \textbf{transparencias de distribución} definidas en el modelo de referencia ANSA/ISO, el \textbf{teorema CAP} de Brewer, los \textbf{modelos de comunicación} presentes en la plataforma y las \textbf{estrategias de tolerancia a fallos} implementadas en producción.
+
+\vspace{0.3cm}
+\begin{center}
+\small
+\hrule
+\vspace{4pt}
+\textbf{Resumen Ejecutivo:} Uber opera más de 4.500 microservicios desplegados más de 100.000 veces por semana por aproximadamente 4.000 ingenieros. Su infraestructura combina centros de datos propios con nubes de Oracle y Google Cloud, formando un sistema distribuido activo-activo multi-región que constituye un caso de estudio ideal para los conceptos de la Unidad~1.
+\vspace{4pt}
+\hrule
+\end{center}
+\vspace{0.3cm}
+
+El análisis se estructura en cuatro secciones principales que abordan cada concepto teórico con evidencia empírica extraída de la documentación técnica pública del equipo de ingeniería de Uber y artículos académicos publicados por sus propios investigadores.
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Transparencias de Distribución en Uber}
+% ════════════════════════════════════════════════════════════════════════════
+
+Las transparencias de distribución son mecanismos mediante los cuales un sistema distribuido oculta su naturaleza distribuida al usuario o al desarrollador. El modelo ANSA/ISO identifica varios tipos; a continuación se analiza cómo Uber implementa o negocia cada una.
+
+\subsection{Transparencia de Acceso}
+Uber unifica el acceso a sus recursos a través de un framework propio de llamadas a procedimiento remoto (RPC) denominado \textbf{YARPC} (\textit{Yet Another RPC}). Este framework permite que un microservicio invoque a otro sin conocer si el destino se ejecuta en el mismo rack, en otro centro de datos o en una nube pública. Los desarrolladores utilizan una interfaz de programación idéntica independientemente del protocolo subyacente (HTTP/1.1, HTTP/2, TChannel).
+
+\subsection{Transparencia de Ubicación}
+La plataforma \textbf{Up} (\textit{Uber Platform}), introducida en 2023, abstrae la ubicación física de los servicios. Los 4.500 microservicios pueden migrarse entre infraestructura propia (on-premise), Oracle Cloud y Google Cloud sin cambios en el código de los clientes. El sistema de descubrimiento de servicios mantiene un anillo hash consistente que redirige las solicitudes al nodo propietario de cada clave sin exponer la topología de red.
+
+\subsection{Transparencia de Migración}
+Durante la migración masiva de microservicios a la nube, Uber diseñó mecanismos de tráfico en paralelo (\textit{shadow traffic}) que redirigían tráfico real hacia los nuevos entornos sin interrupciones para los usuarios finales. Las migraciones entre plataformas de contenedores se ejecutaron de forma transparente a nivel de la aplicación.
+
+\subsection{Transparencia de Replicación}
+Uber emplea \textbf{Cassandra} con replicación multi-clúster dentro de cada región: cada escritura de aplicación resulta en escrituras a dos clústeres distintos con tres réplicas cada uno, y replicación asíncrona entre regiones. El cliente nunca gestiona directamente las réplicas; la biblioteca de acceso a datos abstrae por completo este comportamiento.
+
+\subsection{Transparencia de Concurrencia y Fallos}
+La transparencia de concurrencia se implementa mediante serialización a nivel de aplicación: cada clave tiene un proceso propietario único que organiza los ciclos de lectura, modificación y escritura. Por otra parte, la transparencia de fallos permite que los clientes observen respuestas exitosas incluso cuando nodos individuales han fallado, gracias al sistema de cambio automático (\textit{failover}).
+
+\begin{table}[ht]
+  \centering
+  \caption{Resumen de transparencias de distribución en Uber}
+  \label{tab:transparencias}
+  \small
+  \vspace{0.2cm}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Transparencia} & \textbf{Mecanismo de Uber} & \textbf{Nivel logrado} \\
+    \midrule
+    Acceso      & YARPC (RPC unificado)           & Alto \\
+    Ubicación   & Plataforma Up + Kubernetes      & Alto \\
+    Migración   & Shadow traffic                  & Medio-Alto \\
+    Replicación & Cassandra multi-clúster         & Alto \\
+    Concurrencia& Ringpop (anillo de hash)        & Medio \\
+    Fallos      & Arquitectura Failover           & Alto \\
+    Escalado    & Autoescalado en Kubernetes      & Alto \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Análisis bajo el Teorema CAP}
+% ════════════════════════════════════════════════════════════════════════════
+
+El teorema CAP establece que un sistema distribuido no puede garantizar simultáneamente \textbf{Consistencia} (C), \textbf{Disponibilidad} (A) y \textbf{Tolerancia a Particiones} (P). Dado que las particiones de red son inevitables en cualquier sistema distribuido real, la elección fundamental durante una falla es priorizar la consistencia o la disponibilidad.
+
+\subsection{Posición de Uber en el espacio CAP}
+
+Uber adopta principalmente una posición \textbf{AP} (Disponibilidad y Tolerancia a Particiones), ofreciendo una consistencia eventual en la mayoría de sus subsistemas. Esta elección es coherente con su modelo de negocio: es preferible mostrar al pasajero la ubicación de un conductor con un retraso de pocos segundos que denegar el servicio o bloquear la pantalla durante una fluctuación de la red.
+
+\begin{table}[ht]
+  \centering
+  \caption{Clasificación de los sistemas en el Teorema CAP}
+  \label{tab:cap_comparativa}
+  \small
+  \vspace{0.2cm}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Enfoque} & \textbf{Prioridad en Partición} & \textbf{Ejemplos de Sistemas} \\
+    \midrule
+    \textbf{CP} & Consistencia Estricta (Bloqueo) & Bases de datos bancarias, RDBMS tradicionales \\
+    \textbf{AP (Uber)} & Alta Disponibilidad (Datos eventuales) & \textbf{Plataforma de viajes, Geolocalización} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Decisiones de diseño y compromisos}
+
+\begin{itemize}
+  \item \textbf{Consistencia eventual en geolocalización:} El servicio de despacho (\textit{dispatch}) tolera que diferentes nodos vean posiciones de conductores ligeramente desactualizadas. El impacto en el usuario es mínimo (retraso de 1 a 3 segundos) pero asegura que la aplicación siga funcionando.
+  \item \textbf{Consistencia fuerte en pagos:} A diferencia de la ubicación, el sistema de pagos y facturación emplea consistencia fuerte. Se utiliza un almacenamiento transaccional para garantizar que no ocurran cobros duplicados ni pérdidas de dinero, asumiendo una mayor latencia.
+  \item \textbf{Modelo activo-activo multi-región:} Uber opera con un diseño donde cada región geográfica puede absorber el tráfico global ante un fallo crítico regional, priorizando la disponibilidad continua del servicio.
+\end{itemize}
+
+\subsection{El modelo PACELC}
+El modelo PACELC extiende el teorema CAP al evaluar el comportamiento cuando no hay fallas: se debe elegir entre consistencia (C) y latencia (L). Uber se ubica en el cuadrante \textbf{PA/EL} (Prioriza Disponibilidad ante particiones, y baja Latencia en funcionamiento normal), sacrificando la consistencia estricta en favor de la rapidez en las actualizaciones de mapas.
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Modelos de Comunicación}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Comunicación síncrona: RPC y REST}
+La comunicación directa entre los servicios internos de Uber es mayormente síncrona mediante \textbf{YARPC}. Estas llamadas se usan cuando el resultado se necesita de inmediato: por ejemplo, el servicio de emparejamiento (\textit{matching}) entre conductor y pasajero no puede esperar, requiere confirmación instantánea. Para evitar que el sistema se caiga por completo si un servicio responde lento, se usan técnicas básicas como límites de tiempo (\textit{timeouts}) y cancelaciones rápidas (\textit{circuit breakers}).
+
+\subsection{Comunicación asíncrona: Kafka}
+Para eventos que no requieren una respuesta inmediata, Uber utiliza \textbf{Apache Kafka} como bus de mensajes distribuido. Los registros de inicio de viaje, los históricos de coordenadas GPS y las notificaciones automáticas se envían como eventos asíncronos. Esto permite que los servicios de análisis de datos procesen la información a su propio ritmo sin ralentizar la aplicación del usuario.
+
+\begin{table}[ht]
+  \centering
+  \caption{Modelos de comunicación en la arquitectura de Uber}
+  \label{tab:comunicacion}
+  \small
+  \vspace{0.2cm}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Modelo} & \textbf{Tecnología Base} & \textbf{Caso de Uso Principal} \\
+    \midrule
+    RPC Síncrono    & YARPC / gRPC             & Asignación inmediata de viajes \\
+    REST Síncrono   & HTTP / JSON              & Interfaz con la app móvil cliente \\
+    Asíncrono       & Apache Kafka             & Procesamiento de historial y alertas \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Tolerancia a Fallos}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Arquitectura de Redundancia y Failover}
+Uber cuenta con una arquitectura de failover diseñada para cambiar el tráfico de una región a otra de forma eficiente si un centro de datos entero se desconecta. Para gestionar la carga adecuadamente en una emergencia, el sistema clasifica sus componentes en:
+\begin{enumerate}
+  \item \textbf{Servicios Críticos:} Autenticación, emparejamiento y procesamiento de pagos. No pueden detenerse bajo ninguna circunstancia.
+  \item \textbf{Servicios No Críticos:} Historial de viajes pasados, recomendaciones personalizadas y analíticas. Pueden desactivarse temporalmente para ahorrar recursos durante un fallo.
+\end{enumerate}
+
+\subsection{Mecanismos de Resiliencia Comunes}
+Entre las estrategias estándar aplicadas por los ingenieros de Uber para mantener la tolerancia a fallos se encuentran:
+\begin{itemize}
+  \item \textbf{Aislamiento (Bulkheads):} Se separan los recursos de procesamiento para que un problema en el módulo de opiniones o reseñas no consuma la memoria del módulo de geolocalización.
+  \item \textbf{Reintentos con variación (Jitter):} Si una conexión falla, las aplicaciones reintentan la comunicación usando tiempos de espera aleatorios, evitando saturar los servidores recuperados.
+  \item \textbf{Pruebas de Caos (Chaos Engineering):} Se simulan caídas de servidores de forma controlada directamente en entornos de prueba para comprobar que el sistema distribuido reaccione automáticamente sin intervención humana.
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Análisis Crítico y Discusión}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Fortalezas del Diseño Distribuido}
+La modularidad en miles de microservicios permite actualizaciones constantes sin detener la plataforma completa. Asimismo, la decisión de priorizar la disponibilidad (modelo AP) es correcta para las necesidades reales del transporte. Una aplicación rígida que se colgara por buscar una consistencia de datos perfecta no sería competitiva en el mercado actual.
+
+\subsection{Debilidades y Desafíos}
+Por otro lado, la consistencia eventual puede causar desajustes temporales en zonas de alta densidad (como aeropuertos o estadios), donde múltiples usuarios intentan tomar el mismo vehículo y la información de ubicación tarda segundos en sincronizarse. Adicionalmente, coordinar y monitorear contratos entre más de 4.000 servicios genera una complejidad operativa inmensa para los equipos de ingeniería.
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Conclusiones}
+% ════════════════════════════════════════════════════════════════════════════
+
+El estudio de un caso real como Uber demuestra que los conceptos fundamentales de los sistemas distribuidos no son teorías aisladas, sino decisiones prácticas de diseño:
+
+\begin{itemize}
+  \item Las transparencias de distribución se logran mediante capas de abstracción bien definidas que ocultan la infraestructura física a los ingenieros de software.
+  \item No hay una solución única para el dilema del Teorema CAP; los sistemas complejos combinan consistencia fuerte (para dinero y transacciones) con consistencia eventual (para flujos de coordenadas en tiempo real).
+  \item La tolerancia a fallos requiere un diseño inteligente que aprenda a priorizar módulos críticos sobre funciones secundarias cuando los recursos se ven limitados por contingencias de red.
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════════
+% REFERENCIAS
+% ════════════════════════════════════════════════════════════════════════════
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{uber_up_2023}
+Uber Engineering (2023).
+\textit{Up: Portable Microservices Ready for the Cloud}.
+Uber Blog.
+
+\bibitem{uber_soa_2015}
+Uber Engineering (2015).
+\textit{Service-Oriented Architecture: Scaling the Uber Engineering Codebase}.
+Uber Blog.
+
+\bibitem{uber_fulfillment_2021}
+Uber Engineering (2021).
+\textit{Uber's Fulfillment Platform: Ground-up Re-architecture}.
+Uber Blog.
+
+\bibitem{uber_failover_2024}
+Bansal, M., Chabbi, M., et al. (2024).
+\textit{Uber's Failover Architecture: Reconciling Reliability and Efficiency}.
+arXiv preprint.
+
+\bibitem{tanenbaum_ds}
+Tanenbaum, A. S., \& Van Steen, M. (2017).
+\textit{Distributed Systems: Principles and Paradigms} (3.ª ed.).
+Pearson.
+
+\bibitem{kleppmann}
+Kleppmann, M. (2017).
+\textit{Designing Data-Intensive Applications}.
+O'Reilly Media.
+
+\end{thebibliography}
+
+\end{document}
