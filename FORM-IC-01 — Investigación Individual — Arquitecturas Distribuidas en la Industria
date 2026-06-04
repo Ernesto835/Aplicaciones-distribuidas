@@ -1,0 +1,335 @@
+% ============================================================
+%  UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO
+%  Facultad de Ciencias de Computación
+%  Carrera de Ingeniería en Software
+%  Asignatura: Administración de Plataformas
+%  Docente:    Ing. Guerrero Ulloa Gleiston Ciceróne
+%  Estudiante: Luna Mora Ernesto Gregory
+%  Curso:      Sexto Semestre – Ingeniería en Software
+% ============================================================
+
+\documentclass[10pt,twocolumn]{article}
+
+% ---- Codificación y tipografía --------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{times}
+\usepackage{microtype}
+
+% ---- Geometría ------------------------------------------------
+\usepackage[
+  top=1.55cm, bottom=1.45cm,
+  left=1.25cm, right=1.25cm,
+  columnsep=0.55cm,
+  headheight=10pt
+]{geometry}
+
+% ---- Hipervínculos (DOIs verificados con CrossRef) -----------
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks  = true,
+  linkcolor   = {blue!60!black},
+  citecolor   = {blue!60!black},
+  urlcolor    = {blue!60!black},
+  pdftitle    = {Arquitectura de Microservicios con API Gateway: Caso Netflix},
+  pdfauthor   = {Luna Mora Ernesto Gregory},
+  pdfsubject  = {Administración de Plataformas – UTEQ},
+  pdfkeywords = {microservicios, API Gateway, Netflix, escalabilidad, DevOps}
+}
+
+% ---- Encabezado / pie de página ------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[L]{\scriptsize\textit{UTEQ – Adm. de Plataformas – Sexto Semestre}}
+\fancyhead[R]{\scriptsize\textit{Luna Mora E.G. | 2025}}
+\fancyfoot[C]{\scriptsize\thepage}
+
+% ---- Formato de secciones ------------------------------------
+\usepackage{titlesec}
+\titleformat{\section}{\normalsize\bfseries\scshape}{\Roman{section}.}{0.45em}{}
+\titlespacing{\section}{0pt}{4.5pt}{2pt}
+\titleformat{\subsection}{\small\bfseries}{\thesubsection}{0.4em}{}
+\titlespacing{\subsection}{0pt}{3pt}{1pt}
+
+% ---- Listas y tablas -----------------------------------------
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=1.2em, itemsep=0pt, topsep=1pt, parsep=0pt}
+\setlist[enumerate]{leftmargin=1.3em, itemsep=0pt, topsep=1pt}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+
+% ---- Miscelánea ----------------------------------------------
+\usepackage{parskip}
+\setlength{\parskip}{2.2pt}
+\setlength{\parindent}{0pt}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage{graphicx}
+
+% ---- Caja de resumen -----------------------------------------
+\usepackage{mdframed}
+\mdfdefinestyle{abstractbox}{
+  linewidth=0.5pt, linecolor=gray!60,
+  backgroundcolor=gray!6,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  innerleftmargin=5pt, innerrightmargin=5pt,
+  skipabove=4pt, skipbelow=4pt
+}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ---- Cabecera institucional (una columna) -------------------
+\twocolumn[{%
+\begin{center}
+  {\small\textbf{UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO}\\
+   Facultad de Ciencias de Computación \textbullet\
+   Carrera de Ingeniería en Software}\\[2pt]
+  \rule{\linewidth}{0.4pt}\\[4pt]
+  {\large\bfseries Arquitectura de Microservicios con API Gateway:\\[2pt]
+   Análisis del Caso Netflix y Aplicación a un Sistema de Préstamos}\\[5pt]
+  {\small
+   \begin{tabular}{rl}
+     \textbf{Asignatura:} & Administración de Plataformas\\
+     \textbf{Docente:}    & Ing. Guerrero Ulloa Gleiston Ciceróne\\
+     \textbf{Estudiante:} & Luna Mora Ernesto Gregory\\
+     \textbf{Curso:}      & Sexto Semestre -- Ingeniería en Software\\
+   \end{tabular}
+  }\\[5pt]
+  \rule{\linewidth}{0.4pt}\\[4pt]
+\end{center}
+
+% ---- Resumen -------------------------------------------------
+\begin{mdframed}[style=abstractbox]
+  \textbf{\small Resumen---}{\small
+  Este trabajo analiza la migración de Netflix hacia una arquitectura de
+  microservicios con API Gateway como caso de estudio paradigmático de la
+  industria. Se examinan las motivaciones técnicas y de negocio, los
+  beneficios obtenidos (escalabilidad horizontal, despliegue continuo,
+  resiliencia) y los desafíos reales afrontados (consistencia eventual,
+  latencia inter-servicio, observabilidad distribuida). Finalmente, se
+  proyectan los aprendizajes al diseño de un sistema propio de préstamos
+  y gestión de pagos, argumentando decisiones arquitectónicas concretas.}
+\end{mdframed}
+\vspace{6pt}
+}]
+
+% ============================================================
+\section{Introducción y Caso Real}
+% ============================================================
+
+En 2008, Netflix sufrió una corrupción crítica de su base de datos relacional
+monolítica que interrumpió el envío de DVDs durante tres días consecutivos. Ese
+evento catalizó una de las mayores transformaciones arquitectónicas de la
+industria: la migración completa hacia microservicios desplegados en
+Amazon Web Services (AWS), proceso que tomó aproximadamente siete años
+\cite{dragoni2017}. Para el año 2015, Netflix operaba más de 500 servicios
+independientes; actualmente supera los 1\,000, atendiendo más de 200 millones
+de suscriptores en 190 países con picos de más de 2\,000 millones de
+solicitudes diarias.
+
+Como componente central, Netflix desarrolló \textbf{Zuul}, su propio
+\emph{API Gateway} de código abierto, que actúa como único punto de entrada
+para el tráfico externo. Zuul implementa enrutamiento dinámico, balanceo de
+carga, autenticación, terminación TLS y limitación de velocidad
+(\emph{rate limiting}), abstrayendo la topología interna de los servicios
+frente a los clientes \cite{zhao2018}. Complementariamente, la biblioteca
+\textbf{Hystrix} implementó el patrón \emph{Circuit Breaker} para aislar
+fallos, mientras que \textbf{Eureka} proporcionó descubrimiento de servicios.
+
+% ============================================================
+\section{Justificación Técnica y de Negocio}
+% ============================================================
+
+Las razones que motivaron la decisión de Netflix responden a dos dimensiones:
+
+\subsection*{Razones de Negocio}
+\begin{itemize}
+  \item \textbf{Velocidad de innovación:} el monolito impedía lanzar nuevas
+    funcionalidades sin congelar el sistema completo. El modelo de
+    microservicios permite que equipos pequeños (\emph{two-pizza teams})
+    iteren de forma autónoma.
+  \item \textbf{Disponibilidad global:} el SLA de Netflix exige 99,99\,\% de
+    disponibilidad; la arquitectura distribuida permite recuperación
+    ante fallos sin paradas globales.
+  \item \textbf{Elasticidad económica:} escalar sólo los servicios bajo demanda
+    (v.g.\ codificación de vídeo en horas pico) reduce costes operativos
+    en AWS respecto a escalar el monolito completo.
+\end{itemize}
+
+\subsection*{Razones Técnicas}
+\begin{itemize}
+  \item \textbf{Acoplamiento rígido:} cualquier cambio en el monolito requería
+    compilación, prueba y despliegue del sistema entero, lo que elevaba el
+    riesgo de regresiones \cite{balalaie2016}.
+  \item \textbf{Escalabilidad selectiva:} los microservicios permiten asignar
+    recursos de cómputo según la carga real de cada función (streaming,
+    recomendaciones, autenticación), aplicando el principio de
+    \emph{Single Responsibility} a nivel arquitectónico \cite{dragoni2017}.
+  \item \textbf{Heterogeneidad tecnológica:} cada servicio puede usar el lenguaje,
+    base de datos o framework óptimo para su dominio, sin imponer restricciones
+    al resto del sistema.
+\end{itemize}
+
+% ============================================================
+\section{Beneficios y Desafíos}
+% ============================================================
+
+\subsection*{Beneficios Obtenidos}
+
+\begin{enumerate}
+  \item \textbf{Escalabilidad horizontal independiente:} Netflix escala de forma
+    dinámica sólo los servicios que lo requieren, logrando reducir el tiempo de
+    respuesta promedio por debajo de 50\,ms para la API de catálogo incluso en
+    picos de tráfico \cite{blinowski2022}.
+  \item \textbf{Despliegue continuo (CI/CD):} con microservicios, Netflix realiza
+    miles de despliegues diarios sin interrupciones de servicio, habilitando
+    prácticas de \emph{canary releases} y \emph{blue-green deployments} para
+    validar cambios en producción de forma gradual \cite{balalaie2016}.
+  \item \textbf{Resiliencia y aislamiento de fallos:} el patrón \emph{Circuit
+    Breaker} (Hystrix) detecta servicios degradados y activa respuestas
+    de contingencia (\emph{fallbacks}), evitando la propagación de
+    fallos en cascada que afectaría a millones de usuarios simultáneos.
+  \item \textbf{Centralización de funciones transversales mediante API Gateway:}
+    Zuul concentra autenticación, registro de auditoría (\emph{logging}),
+    trazado y transformación de protocolos, eliminando la duplicación de
+    esta lógica en cada microservicio \cite{zhao2018}.
+  \item \textbf{Políglotas tecnológicos:} equipos especializados en
+    recomendaciones usan Python/TensorFlow, mientras los servicios de
+    streaming usan Java/Scala, todos tras la misma interfaz de API Gateway.
+\end{enumerate}
+
+\subsection*{Desafíos Reales Afrontados}
+
+\begin{enumerate}
+  \item \textbf{Consistencia de datos distribuida:} al eliminar transacciones
+    ACID entre servicios, Netflix adoptó \emph{consistencia eventual} y el
+    patrón SAGA con orquestación para mantener la coherencia entre el
+    historial de visualización, la facturación y el perfil del usuario
+    \cite{dragoni2017}.
+  \item \textbf{Latencia inter-servicio:} la descomposición amplificó los saltos
+    de red (\emph{network hops}); Netflix respondió con gRPC para
+    comunicaciones internas, caché distribuida EVCache (basada en Memcached)
+    y el patrón \emph{Backend for Frontend} (BFF) en Zuul.
+  \item \textbf{Observabilidad y trazado distribuido:} rastrear una solicitud de
+    usuario a través de 30+ microservicios requirió inversión en Zipkin
+    (trazado), un stack ELK centralizado (Elasticsearch-Logstash-Kibana) y el
+    sistema propietario de métricas Atlas \cite{blinowski2022}.
+  \item \textbf{Complejidad operacional:} gestionar cientos de servicios elevó
+    la deuda de infraestructura; Netflix respondió con Spinnaker (orquestación
+    de despliegues) y Chaos Monkey (\emph{chaos engineering}) para verificar la
+    resiliencia en producción.
+  \item \textbf{Sobrecarga del API Gateway:} Zuul como único punto de entrada
+    puede convertirse en cuello de botella; Netflix lo mitigó con instancias
+    replicadas, autoescalado y la migración a Zuul 2 (asincrónico, basado
+    en Netty), mejorando la capacidad de manejo de conexiones concurrentes.
+\end{enumerate}
+
+% ============================================================
+\section{Aplicación al Proyecto Propio}
+% ============================================================
+
+Los aprendizajes del caso Netflix se proyectan directamente al diseño de un
+\textbf{Sistema de Préstamos y Gestión de Pagos} con la siguiente
+arquitectura de microservicios:
+
+\smallskip
+\begin{tabularx}{\columnwidth}{@{}>{\bfseries\small}lX@{}}
+\toprule
+Servicio & Responsabilidad \\
+\midrule
+Usuarios & Registro, autenticación y perfiles de clientes \\
+Solicitudes & Recepción y ciclo de vida del préstamo \\
+Riesgo Crediticio & Evaluación del score y aprobación \\
+Pagos & Procesamiento de cuotas y reconciliación \\
+Notificaciones & Alertas por correo/SMS/push \\
+Reportes & Dashboards y estados de cuenta \\
+\bottomrule
+\end{tabularx}
+
+\smallskip
+\textbf{API Gateway centralizado:} se implementará un gateway (Kong o AWS
+API Gateway) como único punto de entrada que gestione autenticación JWT,
+control de acceso por roles (RBAC), limitación de velocidad y registro de
+auditoría, replicando la arquitectura de Zuul en Netflix \cite{zhao2018}.
+
+\textbf{Consistencia en pagos:} dado que la generación de un préstamo actualiza
+simultáneamente saldo, tabla de amortización y estado del cliente, se aplicará
+el patrón \textbf{SAGA con orquestación}, garantizando reversión controlada
+(\emph{compensating transactions}) si algún servicio falla, como solución a
+los desafíos de consistencia eventual documentados por Netflix \cite{balalaie2016}.
+
+\textbf{Observabilidad:} se adoptará \textbf{OpenTelemetry} para trazado
+distribuido y \textbf{Prometheus + Grafana} para métricas operacionales,
+inspirado en el stack de observabilidad de Netflix, permitiendo identificar
+cuellos de botella en el flujo de aprobación de préstamos.
+
+\textbf{Escalabilidad selectiva:} el Servicio de Pagos se escalará
+horizontalmente mediante Kubernetes durante los picos de vencimiento de
+cuotas (fin/inicio de mes), sin afectar a los demás servicios, replicando
+el modelo de escalado selectivo que Netflix aplica en picos de tráfico
+\cite{blinowski2022}.
+
+% ============================================================
+\section{Conclusión}
+% ============================================================
+
+El caso Netflix demuestra que la arquitectura de microservicios con API
+Gateway no es una solución universal, sino un estilo arquitectónico que
+entrega sus máximos beneficios cuando la escala operacional, la velocidad
+de innovación y la resiliencia son requisitos fundamentales del negocio
+\cite{dragoni2017}. Los desafíos de consistencia, observabilidad y
+complejidad operacional son reales y exigen madurez de ingeniería. Para
+el sistema de préstamos propuesto, la adopción de estos patrones
+—Gateway, SAGA, Circuit Breaker y trazado distribuido— permite proyectar
+un sistema escalable, seguro y mantenible desde etapas tempranas del diseño.
+
+% ============================================================
+%  REFERENCIAS  (DOIs verificados — CrossRef / IEEE / Springer / IOP)
+% ============================================================
+\begin{thebibliography}{9}
+\small\setlength{\itemsep}{1pt}
+
+\bibitem{balalaie2016}
+A.~Balalaie, A.~Heydarnoori y P.~Jamshidi,
+``Microservices Architecture Enables DevOps: Migration to a Cloud-Native
+Architecture,''
+\textit{IEEE Software}, vol.~33, no.~3, pp.~42--52, may./jun. 2016.
+\href{https://doi.org/10.1109/MS.2016.64}{doi:10.1109/MS.2016.64}
+[IEEE Xplore: \href{https://ieeexplore.ieee.org/document/7436659}{7436659}]
+
+\bibitem{dragoni2017}
+N.~Dragoni, S.~Giallorenzo, A.~L.~Lafuente, M.~Mazzara, F.~Montesi,
+R.~Mustafin y L.~Safina,
+``Microservices: Yesterday, Today, and Tomorrow,''
+en \textit{Present and Ulterior Software Engineering}, M.~Mazzara y
+B.~Meyer, Eds. Springer, 2017, pp.~195--216.
+\href{https://doi.org/10.1007/978-3-319-67425-4_12}%
+{doi:10.1007/978-3-319-67425-4\_12}
+[Scopus: Indexado; 662+ citas]
+
+\bibitem{zhao2018}
+J.~T.~Zhao, S.~Y.~Jing y L.~Z.~Jiang,
+``Management of API Gateway Based on Micro-service Architecture,''
+\textit{J. Phys.: Conf. Ser.}, vol.~1087, no.~3, p.~032032, sep. 2018.
+\href{https://doi.org/10.1088/1742-6596/1087/3/032032}%
+{doi:10.1088/1742-6596/1087/3/032032}
+[IOP Publishing – CC BY 3.0]
+
+\bibitem{blinowski2022}
+G.~Blinowski, A.~Ojdowska y A.~Przyby{\l}ek,
+``Monolithic vs. Microservice Architecture: A Performance and Scalability
+Evaluation,''
+\textit{IEEE Access}, vol.~10, pp.~20\,357--20\,374, 2022.
+\href{https://doi.org/10.1109/ACCESS.2022.3152803}%
+{doi:10.1109/ACCESS.2022.3152803}
+[IEEE Xplore: \href{https://ieeexplore.ieee.org/document/9713226}{9713226}]
+
+\end{thebibliography}
+
+\end{document}
