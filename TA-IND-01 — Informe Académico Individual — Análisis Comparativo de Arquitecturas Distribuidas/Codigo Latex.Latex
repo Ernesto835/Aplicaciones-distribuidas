@@ -1,0 +1,741 @@
+
+% ============================================================
+%  TRABAJO AUTÓNOMO INDIVIDUAL – APLICACIONES DISTRIBUIDAS
+%  Universidad Técnica Estatal de Quevedo (UTEQ)
+%  Facultad de Ciencias de la Computación
+%  Autor : Luna Mora Ernesto Gregory
+%  Docente: Ing. Guerrero Ulloa Gleiston Cicerón
+% ============================================================
+\documentclass[12pt,a4paper]{article}
+
+% ---------- PAQUETES ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,arrows.meta,shapes.symbols}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+% hyperref SIEMPRE al final — con colorlinks para que los DOI sean clicables
+\usepackage{hyperref}
+
+% ---------- GEOMETRÍA ----------
+\geometry{
+  a4paper,
+  top=2.5cm, bottom=2.5cm,
+  left=3cm, right=2.5cm
+}
+
+% ---------- COLORES ----------
+\definecolor{darkgray}{RGB}{80,80,80}
+\definecolor{soagreen}{RGB}{34,139,34}
+\definecolor{microred}{RGB}{180,0,0}
+
+% ---------- ESTILOS DE SECCIÓN – negro ----------
+\titleformat{\section}
+  {\large\bfseries\color{black}}
+  {\thesection.}{0.5em}{}[\titlerule]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{black}}
+  {\thesubsection.}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\itshape\color{darkgray}}
+  {\thesubsubsection.}{0.5em}{}
+
+% ---------- ENCABEZADO / PIE ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{darkgray}Análisis Comparativo: SOA vs.\ Microservicios}
+\fancyhead[R]{\small\color{darkgray}Luna Mora Ernesto Gregory}
+\fancyfoot[C]{\small\color{darkgray}\thepage}
+\fancyfoot[R]{\small\color{darkgray}UTEQ -- ISR-701}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- CONFIGURACIÓN HYPERREF ----------
+% citecolor = negro (citas en texto), urlcolor = azul (DOI/URL clicables)
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = black,
+  citecolor  = black,
+  urlcolor   = blue,
+  pdftitle   = {Análisis Comparativo: SOA vs. Microservicios},
+  pdfauthor  = {Luna Mora Ernesto Gregory}
+}
+
+% ---------- INTERLINEADO ----------
+\setstretch{1.25}
+
+% ============================================================
+\begin{document}
+
+% =================== PORTADA ===================
+\begin{titlepage}
+  \centering
+  \vspace*{0.5cm}
+
+  {\rule{\linewidth}{2pt}}\vspace{4pt}
+  {\rule{\linewidth}{0.8pt}}
+
+  \vspace{1.0cm}
+
+  {\Large\bfseries UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO\\[4pt] UTEQ}\par
+  \vspace{0.4cm}
+  {\large Facultad de Ciencias de la Computación}\par
+  {\normalsize Ingeniería en Sistemas / Ciencias de la Computación}\par
+
+  \vspace{1.6cm}
+
+  {\large\bfseries TRABAJO AUTÓNOMO INDIVIDUAL SUMATIVO}\par
+
+  \vspace{0.7cm}
+
+  {\LARGE\bfseries
+    Análisis Comparativo Profundo:\\[6pt]
+    Arquitectura Orientada a Servicios (SOA)\\[4pt]
+    vs.\ Microservicios
+  }\par
+
+  \vspace{0.5cm}
+
+  {\normalsize
+    Aplicación al Dominio del Sistema de Soporte Técnico\\
+    (Proyecto Integrador)
+  }\par
+
+  \vspace{1.8cm}
+
+  \begin{tabular}{@{}ll@{}}
+    \textbf{Asignatura:}  & Aplicaciones Distribuidas (ISR-701)         \\[6pt]
+    \textbf{Período:}     & 2025--2026                                   \\[6pt]
+    \textbf{Docente:}     & Ing.\ Guerrero Ulloa Gleiston Cicerón        \\[6pt]
+    \textbf{Estudiante:}  & Luna Mora Ernesto Gregory                    \\[6pt]
+    \textbf{Repositorio:} & \href{https://github.com/usuario/soporte-tecnico}%
+                            {\texttt{github.com/usuario/soporte-tecnico}} \\[6pt]
+    \textbf{Fecha:}       & \today                                       \\
+  \end{tabular}
+
+  \vspace*{\fill}
+
+  {\rule{\linewidth}{0.8pt}}\vspace{4pt}
+  {\rule{\linewidth}{2pt}}
+\end{titlepage}
+
+% =================== TABLA DE CONTENIDOS ===================
+% Sin \newpage extra: el índice fluye directo al contenido
+\tableofcontents
+\clearpage
+
+% =================== RESUMEN ===================
+\begin{abstract}
+  \noindent
+  El presente trabajo analiza de manera comparativa y crítica dos paradigmas
+  fundamentales de la arquitectura de software distribuido: la Arquitectura
+  Orientada a Servicios (\emph{Service-Oriented Architecture}, SOA) y la
+  Arquitectura de Microservicios. A través de la revisión sistemática de
+  literatura académica indexada en IEEE~Xplore y Scopus, se examinan los
+  fundamentos teóricos, las diferencias estructurales, los patrones de
+  comunicación, las implicaciones en escalabilidad, mantenibilidad, seguridad
+  y gobierno de datos de cada paradigma. Adicionalmente, se aplican estos
+  principios al dominio del proyecto integrador propio: un sistema de soporte
+  técnico basado en tickets, justificando la elección arquitectónica adoptada
+  mediante criterios técnicos y de calidad. Los resultados muestran que, si
+  bien SOA provee un marco maduro de interoperabilidad empresarial, los
+  microservicios ofrecen mayor agilidad y autonomía de despliegue para
+  contextos con equipos reducidos y necesidades de escalado granular
+  \citep{li2021comparing, jamshidi2018microservices}.
+
+  \vspace{6pt}
+  \noindent\textbf{Palabras clave:} SOA, microservicios, arquitectura
+  distribuida, escalabilidad, ESB, contenedores, DevOps, REST, sistemas
+  de tickets.
+\end{abstract}
+
+% ============================================================
+\section{Introducción}
+% ============================================================
+
+Las organizaciones modernas enfrentan el desafío permanente de construir
+sistemas de software que sean escalables, resilientes y mantenibles a largo
+plazo. Durante las últimas dos décadas, la industria ha transitado desde
+arquitecturas monolíticas hacia enfoques distribuidos, siendo la Arquitectura
+Orientada a Servicios (SOA) y la Arquitectura de Microservicios los dos
+paradigmas más relevantes en dicho proceso \citep{dragoni2017microservices}.
+
+SOA emergió a mediados de la década de 2000 como respuesta a la necesidad de
+interoperabilidad entre sistemas heterogéneos en entornos empresariales,
+apoyándose en estándares como SOAP, WSDL y el \emph{Enterprise Service Bus}
+(ESB) \citep{erl2005serviceoriented, zhou2018revisiting}. Los microservicios,
+por su parte, surgieron como una evolución pragmática impulsada por empresas
+como Netflix, Amazon y Uber, que requerían ciclos de despliegue más rápidos
+y una escalabilidad independiente por componente
+\citep{newman2015building, fowler2014microservices}.
+
+A pesar de que ambas aproximaciones comparten el principio de descomposición
+funcional, existen diferencias sustanciales en granularidad, acoplamiento,
+protocolos de comunicación y modelo operativo
+\citep{li2021comparing, alshuqayran2016systematic}. La elección entre uno u
+otro paradigma tiene consecuencias directas sobre el costo de desarrollo,
+la velocidad de entrega y la capacidad de respuesta ante cambios del negocio
+\citep{soldani2018pains}.
+
+\subsection{Objetivos del Análisis}
+
+\begin{itemize}[leftmargin=*,noitemsep]
+  \item Caracterizar los fundamentos teóricos y estructurales de SOA y
+    microservicios a partir de literatura académica verificada.
+  \item Identificar diferencias clave en escalabilidad, comunicación,
+    gobierno de datos y seguridad entre ambos paradigmas.
+  \item Construir una matriz comparativa multidimensional fundamentada en
+    criterios técnicos cuantificables.
+  \item Aplicar el análisis al dominio del sistema de soporte técnico
+    (proyecto integrador) para justificar la arquitectura adoptada.
+\end{itemize}
+
+\subsection{Alcance y Metodología}
+
+La revisión bibliográfica se realizó sobre bases de datos académicas de
+primer nivel: IEEE~Xplore, Scopus y ACM Digital Library. Se seleccionaron
+artículos publicados entre 2003 y 2021, priorizando estudios comparativos
+empíricos, casos de estudio industriales y \emph{systematic literature
+reviews} (SLR). El análisis sigue un enfoque cualitativo-comparativo,
+complementado con razonamiento técnico aplicado.
+
+% ============================================================
+\section{Marco Teórico}
+% ============================================================
+
+\subsection{Arquitectura Orientada a Servicios (SOA)}
+
+SOA es un paradigma de diseño de software en el cual la funcionalidad del
+sistema se encapsula en \textit{servicios} con interfaces bien definidas,
+publicadas y descubribles, que se comunican mediante protocolos estándar de
+red \citep{papazoglou2003serviceoriented}. Los principios fundamentales que
+rigen SOA, según \citet{erl2005serviceoriented}, incluyen:
+
+\begin{enumerate}[leftmargin=*,noitemsep]
+  \item \textbf{Contrato de servicio estandarizado:} cada servicio expone
+    su interfaz mediante WSDL (\emph{Web Services Description Language}).
+  \item \textbf{Acoplamiento débil:} los servicios minimizan las
+    dependencias entre sí.
+  \item \textbf{Abstracción:} la lógica interna queda oculta tras la
+    interfaz pública.
+  \item \textbf{Reutilización:} la funcionalidad se diseña para ser
+    consumida por múltiples clientes.
+  \item \textbf{Autonomía:} los servicios controlan su propia lógica.
+  \item \textbf{Statelessness:} los servicios no retienen información de
+    estado entre invocaciones.
+  \item \textbf{Descubrimiento:} los servicios se registran en un
+    repositorio (\emph{UDDI}) para ser localizados dinámicamente.
+  \item \textbf{Composabilidad:} los servicios pueden orquestarse para
+    formar procesos de negocio complejos.
+\end{enumerate}
+
+El componente central de SOA en implementaciones empresariales es el
+\textbf{Enterprise Service Bus} (ESB), que actúa como intermediario
+inteligente encargado del enrutamiento de mensajes, la transformación de
+formatos, la orquestación de servicios y la gestión de seguridad
+\citep{cerny2018contextual}. Ejemplos de ESB ampliamente adoptados incluyen
+MuleSoft Anypoint Platform, IBM Integration Bus y Apache ServiceMix.
+
+\subsection{Arquitectura de Microservicios}
+
+Los microservicios representan un estilo arquitectónico en el que una
+aplicación se construye como un conjunto de servicios pequeños, cada uno
+ejecutándose en su propio proceso y comunicándose mediante mecanismos
+ligeros, típicamente API~HTTP/REST o mensajería asíncrona
+\citep{fowler2014microservices}. Cada microservicio posee responsabilidad
+única (\emph{Single Responsibility Principle}) y puede desplegarse,
+escalar y actualizarse de forma totalmente independiente.
+
+Según \citet{dragoni2017microservices}, los microservicios heredan conceptos
+de SOA pero los llevan a un nivel de granularidad mucho mayor, eliminando el
+intermediario centralizado (ESB) y distribuyendo la lógica de coordinación
+hacia los propios servicios o hacia capas delgadas como el \emph{API Gateway}.
+Las características distintivas identificadas por \citet{newman2015building} son:
+
+\begin{itemize}[leftmargin=*,noitemsep]
+  \item \textbf{Autonomía total del despliegue} mediante contenedores
+    (Docker) y orquestadores (Kubernetes).
+  \item \textbf{Descentralización de datos:} cada servicio gestiona su
+    propia base de datos (\emph{database per service pattern}).
+  \item \textbf{Resiliencia por diseño:} patrones como \emph{Circuit
+    Breaker} y \emph{Bulkhead} aíslan fallos.
+  \item \textbf{Cultura DevOps:} integración y entrega continua (CI/CD)
+    como práctica operativa fundamental.
+  \item \textbf{Trazabilidad distribuida} mediante herramientas como
+    Jaeger, Zipkin o OpenTelemetry.
+\end{itemize}
+
+\citet{jamshidi2018microservices} identifican además que la adopción de
+microservicios implica un cambio organizacional profundo, alineado con la
+Ley de Conway: la estructura del sistema refleja inevitablemente la
+estructura de comunicación de los equipos que lo construyen.
+
+\subsection{Contexto Histórico y Evolución}
+
+La figura~\ref{fig:evolucion} resume la trayectoria evolutiva desde los
+sistemas monolíticos hacia los microservicios, pasando por SOA.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=2.2cm,
+  every node/.style={font=\small},
+  box/.style={rectangle, draw=black, fill=gray!10, rounded corners=3pt,
+              text width=3.2cm, align=center, minimum height=1cm}
+]
+  \node[box] (mono) {Monolito\\{\tiny 1960s--1990s}};
+  \node[box, right of=mono] (soa)  {SOA\\{\tiny 2000s--2010s}};
+  \node[box, right of=soa]  (ms)   {Microservicios\\{\tiny 2010s--presente}};
+  \node[box, right of=ms, fill=gray!20, draw=black]
+                             (cl)   {Serverless /\\Cloud-Native\\{\tiny futuro}};
+  \draw[->, thick] (mono) -- (soa);
+  \draw[->, thick] (soa)  -- (ms);
+  \draw[->, thick, darkgray] (ms) -- (cl);
+\end{tikzpicture}
+\caption{Evolución de los estilos arquitectónicos distribuidos.
+  Elaboración propia basada en \citet{dragoni2017microservices}.}
+\label{fig:evolucion}
+\end{figure}
+
+% ============================================================
+\section{Análisis Comparativo Profundo}
+% ============================================================
+
+\subsection{Granularidad y Alcance del Servicio}
+
+Una de las diferencias más significativas entre SOA y microservicios reside
+en la granularidad con la que se definen los servicios. En SOA, los servicios
+suelen representar \textit{capacidades de negocio} de grano grueso
+(\emph{coarse-grained}): por ejemplo, un servicio de ``Gestión de Pedidos''
+que encapsula el ciclo completo de una orden. En contraste, en microservicios
+cada componente representa una función técnica o de negocio muy acotada, como
+``Cálculo de Impuestos'' o ``Notificación por Correo''
+\citep{li2021comparing, di2019architecting}.
+
+\citet{cerny2018contextual} señalan que esta diferencia tiene consecuencias
+directas sobre la superficie de acoplamiento entre componentes: los servicios
+SOA de grano grueso reducen el volumen de llamadas en red, pero incrementan
+el acoplamiento interno. Los microservicios, al ser más atómicos, maximizan
+la cohesión interna y minimizan el acoplamiento entre servicios, a costa de
+mayor latencia de red y complejidad operativa \citep{alshuqayran2016systematic}.
+
+\subsection{Protocolos de Comunicación}
+
+\begin{table}[H]
+\centering
+\caption{Comparativa de protocolos de comunicación entre SOA y Microservicios.
+  Adaptado de \citet{li2021comparing} y \citet{cerny2018contextual}.}
+\label{tab:protocolos}
+\small
+\begin{tabularx}{\textwidth}{@{} l X X @{}}
+\toprule
+\textbf{Dimensión}          & \textbf{SOA}                         & \textbf{Microservicios}            \\
+\midrule
+Protocolo principal         & SOAP/HTTP, JMS, AMQP                 & REST/HTTP, gRPC, AMQP, Kafka       \\
+Formato de mensaje          & XML (verboso)                        & JSON, Protocol Buffers (compacto)  \\
+Intermediario               & ESB (centralizado, inteligente)      & API Gateway (ligero, enrutamiento) \\
+Contrato de interfaz        & WSDL (estricto, tipado)              & OpenAPI/Swagger, gRPC proto        \\
+Patrón de comunicación      & Síncrono (RPC) predominante          & Síncrono y asíncrono (eventos)     \\
+Overhead de protocolo       & Alto (envoltura SOAP)                & Bajo (HTTP/2, binary encoding)     \\
+Descubrimiento de servicios & UDDI (centralizado)                  & DNS, Consul, Eureka (distribuido)  \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El uso de SOAP en SOA implica una sobrecarga significativa en la serialización
+y el procesamiento de mensajes XML, lo que puede impactar la latencia en
+sistemas de alto throughput \citep{pahl2016microservices}. Los microservicios
+adoptan REST o gRPC, reduciendo considerablemente el tamaño de los mensajes
+y mejorando el rendimiento, especialmente en comunicaciones internas de alta
+frecuencia.
+
+\subsection{Gobierno de Datos y Persistencia}
+
+El modelo de persistencia constituye uno de los puntos de divergencia más
+profundos. SOA típicamente opera sobre un modelo de datos compartido: múltiples
+servicios acceden a la misma base de datos centralizada o a un conjunto de bases
+de datos corporativas gestionadas por un equipo de DBA central
+\citep{erl2005serviceoriented}. Esto simplifica la consistencia transaccional
+(ACID a nivel de base de datos), pero crea un acoplamiento implícito fuerte que
+dificulta la evolución independiente de los servicios.
+
+Los microservicios abrazan el principio de \textbf{Bounded Context} (tomado
+de Domain-Driven Design, \citealt{evans2003ddd}) y el patrón \emph{database
+per service}: cada servicio es dueño exclusivo de su almacenamiento. Esta
+estrategia habilita la poliglotía de persistencia (usar PostgreSQL para datos
+transaccionales, Redis para caché, MongoDB para documentos), pero exige
+mecanismos explícitos para mantener consistencia eventual entre servicios,
+como el patrón \emph{Saga} o eventos de dominio
+\citep{richardson2019microservices}.
+
+\subsection{Escalabilidad}
+
+Desde la perspectiva de escalabilidad, ambas arquitecturas soportan escalado
+horizontal, pero con distintos niveles de granularidad. En SOA, el ESB actúa
+frecuentemente como cuello de botella centralizado: cuando el volumen de
+mensajes se incrementa, el ESB debe escalar como unidad completa, lo que puede
+resultar costoso e ineficiente \citep{cerny2018contextual}.
+
+Los microservicios permiten escalar cada servicio de forma independiente según
+su demanda real. Un servicio de ``Autenticación'' puede ejecutarse en 20
+réplicas mientras que el servicio de ``Reportes'' opera en 2, optimizando el
+uso de recursos de cómputo. Esta capacidad es especialmente valiosa cuando se
+combina con plataformas de contenedores como Kubernetes, que gestiona
+automáticamente el escalado horizontal mediante \emph{Horizontal Pod
+Autoscaler} \citep{burns2016borg}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=13cm, height=6cm,
+  ybar=4pt,
+  bar width=18pt,
+  xlabel={Criterio de Evaluación},
+  ylabel={Puntuación (0--10)},
+  symbolic x coords={Escalabilidad, Mantenibilidad, Agilidad,
+                     Interoperabilidad, Seguridad, Costo Inicial},
+  xtick=data,
+  x tick label style={rotate=30, anchor=east, font=\small},
+  ymin=0, ymax=10,
+  legend style={at={(0.97,0.97)}, anchor=north east, font=\small},
+  nodes near coords,
+  nodes near coords align={vertical},
+  every node near coord/.style={font=\scriptsize},
+  grid=major,
+  grid style={dotted, gray!40},
+]
+\addplot[fill=soagreen!70, draw=soagreen] coordinates {
+  (Escalabilidad,6) (Mantenibilidad,5) (Agilidad,4)
+  (Interoperabilidad,9) (Seguridad,8) (Costo Inicial,7)
+};
+\addplot[fill=microred!70, draw=microred] coordinates {
+  (Escalabilidad,9) (Mantenibilidad,8) (Agilidad,9)
+  (Interoperabilidad,6) (Seguridad,7) (Costo Inicial,4)
+};
+\legend{SOA, Microservicios}
+\end{axis}
+\end{tikzpicture}
+\caption{Comparativa multidimensional SOA vs.\ Microservicios (puntuación
+  relativa). Elaboración propia basada en \citet{li2021comparing},
+  \citet{cerny2018contextual} y \citet{pahl2016microservices}.}
+\label{fig:radar}
+\end{figure}
+
+\subsection{Seguridad}
+
+La seguridad en SOA se gestiona predominantemente a través de estándares
+WS-Security, WS-Policy y WS-Trust, que proveen cifrado de mensajes a nivel
+XML, autenticación mediante tokens SAML y autorización basada en políticas
+centralizadas gestionadas por el ESB \citep{cerny2018contextual}. Esta
+centralización simplifica la auditoría y el cumplimiento normativo.
+
+En microservicios, la seguridad se distribuye: cada servicio debe autenticar
+y autorizar las solicitudes entrantes, usualmente mediante tokens JWT
+(\emph{JSON Web Token}) validados contra un servidor de autorización OAuth~2.0
+o OpenID~Connect \citep{richardson2019microservices}. El \emph{API Gateway}
+actúa como punto de entrada único (\emph{Zero Trust Perimeter}), mientras que
+la comunicación interna entre servicios se protege mediante mTLS
+(\emph{mutual TLS}) en plataformas de service mesh como Istio o Linkerd
+\citep{jamshidi2018microservices}.
+
+\subsection{Mantenibilidad y Deuda Técnica}
+
+Los sistemas SOA maduros tienden a acumular deuda técnica derivada de la
+rigidez del ESB y de la dificultad para refactorizar contratos WSDL sin
+interrumpir a los consumidores existentes \citep{pahl2016microservices}.
+El versionado de servicios y la compatibilidad hacia atrás se convierten
+en desafíos operativos críticos.
+
+Los microservicios, al ser unidades más pequeñas y cohesivas, son más
+fáciles de refactorizar, reescribir o reemplazar de forma incremental.
+Sin embargo, la proliferación de servicios puede generar el fenómeno
+denominado \emph{microservices sprawl}, donde el número de servicios
+supera la capacidad del equipo de operarlos eficientemente
+\citep{taibi2017processes}. \citet{soldani2018pains} documentan que los
+principales dolores reportados por practicantes incluyen precisamente
+la complejidad operativa y la dificultad de depuración en sistemas
+altamente distribuidos.
+
+% ============================================================
+\section{Matriz Comparativa Multidimensional}
+% ============================================================
+
+La tabla~\ref{tab:matriz} consolida los resultados del análisis comparativo
+en una matriz estructurada que permite una evaluación sistemática de ambos
+paradigmas bajo criterios técnicos y organizacionales ponderados.
+
+\begin{longtable}{@{} p{3.2cm} p{5.3cm} p{5.3cm} @{}}
+\caption{Matriz comparativa multidimensional: SOA vs.\ Microservicios.
+  Fuentes: \citet{dragoni2017microservices}, \citet{li2021comparing},
+  \citet{cerny2018contextual}, \citet{richardson2019microservices},
+  \citet{di2019architecting}.}
+\label{tab:matriz} \\
+\toprule
+\textbf{Dimensión}       & \textbf{SOA}                              & \textbf{Microservicios}             \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\small\textit{(Continuación de la Tabla~\ref{tab:matriz})}} \\
+\toprule
+\textbf{Dimensión}       & \textbf{SOA}                              & \textbf{Microservicios}             \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+Granularidad         & Grano grueso; servicios de capacidad de negocio completa
+                     & Grano fino; función única y acotada \\[4pt]
+Intermediario        & ESB centralizado con lógica de orquestación
+                     & API Gateway ligero; lógica en los servicios \\[4pt]
+Protocolo            & SOAP/XML, WS-* standards
+                     & REST, gRPC, mensajería (Kafka, RabbitMQ) \\[4pt]
+Persistencia         & Base de datos compartida o modelo centralizado
+                     & \emph{Database per service}; poliglotía \\[4pt]
+Consistencia         & ACID transaccional (fácil)
+                     & Consistencia eventual; patrón Saga \\[4pt]
+Escalado             & Vertical o por ESB completo
+                     & Horizontal granular por servicio \\[4pt]
+Despliegue           & Ciclos largos; artefactos pesados (EAR, WAR)
+                     & CI/CD; contenedores Docker/Kubernetes \\[4pt]
+Seguridad            & WS-Security, SAML, políticas centralizadas en ESB
+                     & OAuth 2.0, JWT, mTLS, Zero Trust \\[4pt]
+Monitoreo            & Herramientas ESB integradas; log centralizado
+                     & Distributed tracing (Jaeger/Zipkin), ELK Stack \\[4pt]
+Interoperabilidad    & Alta; estándares maduros (WSDL, UDDI)
+                     & Media; contratos OpenAPI, pero menos estandarización \\[4pt]
+Agilidad desarrollo  & Baja; ciclos de cambio lentos por acoplamiento ESB
+                     & Alta; equipos autónomos por servicio (Conway's Law) \\[4pt]
+Costo adopción       & Medio-alto (licencias ESB, infraestructura central)
+                     & Alto en infraestructura DevOps; bajo en open source \\[4pt]
+Talento requerido    & Arquitectos de integración, especialistas ESB
+                     & Ingenieros DevOps, Cloud, SRE, fullstack \\[4pt]
+Idoneidad            & Integración de sistemas legados; entornos enterprise
+                     & Startups, productos digitales, equipos ágiles \\
+\bottomrule
+\end{longtable}
+
+% ============================================================
+\section{Aplicación al Proyecto Integrador: Sistema de Soporte Técnico}
+% ============================================================
+
+\subsection{Descripción del Dominio}
+
+El proyecto integrador consiste en un \textbf{Sistema de Gestión de Tickets
+de Soporte Técnico}, diseñado para gestionar el ciclo de vida completo de
+las solicitudes de asistencia técnica dentro de una organización. El código
+fuente está disponible en:
+\href{https://github.com/usuario/soporte-tecnico}{\texttt{github.com/usuario/soporte-tecnico}}.
+
+El sistema contempla los siguientes dominios funcionales:
+
+\begin{itemize}[leftmargin=*,noitemsep]
+  \item \textbf{Gestión de Tickets:} creación, actualización, priorización
+    y cierre de incidencias.
+  \item \textbf{Gestión de Usuarios y Roles:} clientes, técnicos y
+    administradores con permisos diferenciados.
+  \item \textbf{Notificaciones:} alertas por correo electrónico y en
+    plataforma ante cambios de estado.
+  \item \textbf{Base de Conocimiento:} repositorio de soluciones a
+    incidencias recurrentes.
+  \item \textbf{Reportes y Métricas:} dashboards de SLA, tiempo de
+    resolución y satisfacción del usuario.
+  \item \textbf{Autenticación y Autorización:} gestión de identidades y
+    control de acceso.
+\end{itemize}
+
+\subsection{Evaluación de Alternativas Arquitectónicas}
+
+\subsubsection{Aplicación de SOA al Sistema de Tickets}
+
+Bajo un enfoque SOA, el sistema se estructuraría alrededor de un ESB que
+orquestaría servicios como \texttt{TicketService}, \texttt{UserService} y
+\texttt{NotificationService}, comunicándose mediante SOAP. Los beneficios
+incluirían la estandarización de contratos y la facilidad de integración con
+sistemas legacy \citep{papazoglou2003serviceoriented, zhou2018revisiting}.
+
+Sin embargo, los inconvenientes para este dominio son significativos: la
+sobrecarga del ESB introduciría latencia innecesaria; el ciclo de despliegue
+centralizado ralentizaría la iteración; y el costo de licencias de plataformas
+ESB comerciales sería desproporcionado para un sistema de escala media
+\citep{cerny2018contextual}.
+
+\subsubsection{Aplicación de Microservicios al Sistema de Tickets}
+
+La arquitectura de microservicios se alinea de manera natural con los
+\emph{Bounded Contexts} identificados en el dominio. La figura~\ref{fig:c4}
+ilustra la descomposición propuesta en el nivel C4-L3.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=1.5cm,
+  every node/.style={font=\scriptsize},
+  svc/.style={rectangle, draw=black, fill=gray!12, rounded corners=3pt,
+              text width=2.5cm, align=center, minimum height=1.1cm},
+  gw/.style={rectangle, draw=black, fill=gray!28, rounded corners=3pt,
+              text width=2.8cm, align=center, minimum height=1.1cm},
+  db/.style={cylinder, draw=darkgray, fill=gray!15, shape border rotate=90,
+             text width=1.6cm, align=center, minimum height=0.8cm}
+]
+  \node[gw] (gw) {API Gateway\\{\tiny Auth + Rate Limiting}};
+  \node[svc, below left=1.2cm and 3.5cm of gw]  (ticket) {Ticket\\Service};
+  \node[svc, below left=1.2cm and 0.8cm of gw]  (user)   {User\\Service};
+  \node[svc, below right=1.2cm and 0.8cm of gw] (notif)  {Notification\\Service};
+  \node[svc, below right=1.2cm and 3.5cm of gw] (kb)     {Knowledge\\Base Service};
+  \node[db, below=0.9cm of ticket] (dbt) {\tiny PostgreSQL};
+  \node[db, below=0.9cm of user]   (dbu) {\tiny PostgreSQL};
+  \node[db, below=0.9cm of notif]  (dbn) {\tiny Redis};
+  \node[db, below=0.9cm of kb]     (dbk) {\tiny MongoDB};
+  \draw[->, thick] (gw) -- (ticket);
+  \draw[->, thick] (gw) -- (user);
+  \draw[->, thick] (gw) -- (notif);
+  \draw[->, thick] (gw) -- (kb);
+  \draw[thick, darkgray] (ticket) -- (dbt);
+  \draw[thick, darkgray] (user)   -- (dbu);
+  \draw[thick, darkgray] (notif)  -- (dbn);
+  \draw[thick, darkgray] (kb)     -- (dbk);
+  \node[rectangle, draw=black, fill=gray!10, rounded corners=3pt,
+        text width=8cm, align=center, minimum height=0.8cm,
+        below=2.6cm of gw] (bus)
+    {Message Bus -- Apache Kafka (eventos de dominio)};
+  \draw[->, dashed] (ticket) -- (bus);
+  \draw[->, dashed] (notif.south west) -- (bus);
+\end{tikzpicture}
+\caption{Arquitectura de microservicios propuesta para el Sistema de
+  Soporte Técnico. Elaboración propia.}
+\label{fig:c4}
+\end{figure}
+
+La elección de microservicios se justifica por los siguientes argumentos:
+
+\begin{enumerate}[leftmargin=*,noitemsep]
+  \item \textbf{Escalabilidad diferenciada:} el \texttt{TicketService}
+    puede escalar a múltiples réplicas sin afectar al resto de servicios
+    \citep{burns2016borg}.
+  \item \textbf{Ciclos de despliegue independientes:} una actualización al
+    motor de notificaciones no requiere un ciclo de pruebas completo
+    \citep{taibi2017processes}.
+  \item \textbf{Resiliencia:} el patrón \emph{Circuit Breaker} con
+    Resilience4j aísla fallos entre servicios
+    \citep{richardson2019microservices}.
+  \item \textbf{Poliglotía tecnológica:} MongoDB para la base de
+    conocimiento y PostgreSQL para tickets transaccionales
+    \citep{di2019architecting}.
+  \item \textbf{Alineación con el equipo:} tres integrantes trabajan
+    autónomamente sobre servicios distintos, aplicando la Ley de Conway
+    \citep{jamshidi2018microservices}.
+\end{enumerate}
+
+\subsection{Patrones Técnicos Adoptados}
+
+Con base en las recomendaciones de \citet{richardson2019microservices},
+se adoptaron los siguientes patrones:
+
+\begin{itemize}[leftmargin=*,noitemsep]
+  \item \textbf{API Gateway:} punto de entrada único con autenticación
+    JWT, rate limiting y enrutamiento.
+  \item \textbf{Database per Service:} aislamiento completo del modelo
+    de datos por servicio.
+  \item \textbf{Saga Coreografiada:} consistencia eventual en flujos
+    multiservicios (crear ticket $\rightarrow$ notificar agente).
+  \item \textbf{Circuit Breaker:} tolerancia a fallos con Resilience4j.
+  \item \textbf{Distributed Tracing:} trazabilidad con OpenTelemetry + Jaeger.
+  \item \textbf{Health Check API:} endpoints \texttt{/health} para
+    orquestación Kubernetes.
+\end{itemize}
+
+% ============================================================
+\section{Discusión y Análisis Crítico}
+% ============================================================
+
+El análisis revela que la elección entre SOA y microservicios debe responder
+a factores contextuales concretos: el tamaño del equipo, la naturaleza del
+dominio de negocio, la madurez de la infraestructura y los requisitos no
+funcionales \citep{li2021comparing, soldani2018pains}.
+
+SOA continúa siendo la opción más apropiada en entornos de integración
+empresarial compleja, donde es necesario conectar sistemas legados, bases
+de datos heterogéneas y procesos regulados. Las garantías transaccionales
+ACID y los contratos WSDL estrictos son activos en estos contextos. Como
+señalan \citet{cerny2018contextual}, organizaciones con décadas de inversión
+en SOA no deberían migrar a microservicios por motivos puramente ideológicos.
+
+Los microservicios han demostrado su valor en organizaciones que priorizan
+la velocidad de entrega y la escalabilidad granular. Los casos de Netflix y
+Amazon \citep{burns2016borg} demuestran que la inversión en infraestructura
+DevOps se amortiza a escala con creces.
+
+Una tendencia emergente documentada por \citet{taibi2017processes} es la
+adopción de enfoques híbridos (\textit{bimodal IT}): núcleo SOA para la
+integración enterprise y microservicios para los nuevos productos digitales.
+\citet{di2019architecting} documentan que una proporción significativa de
+las organizaciones estudiadas emplea arquitecturas mixtas en producción,
+lo que sugiere que ambos paradigmas son complementarios más que excluyentes.
+
+El proyecto integrador, por su naturaleza de escala media con equipos
+pequeños y requisitos de iteración ágil, representa un caso donde los
+microservicios aportan beneficios netos claros, siempre que se gestione
+adecuadamente la complejidad operativa introducida
+\citep{alshuqayran2016systematic}.
+
+% ============================================================
+\section{Conclusiones}
+% ============================================================
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{SOA y microservicios comparten ADN pero difieren en
+    estrategia.} Ambos adoptan la descomposición funcional y el acoplamiento
+    débil, pero SOA centraliza la coordinación en el ESB mientras que los
+    microservicios la distribuyen \citep{dragoni2017microservices}.
+
+  \item \textbf{La granularidad determina el modelo operativo.} Los
+    servicios SOA de grano grueso son más sencillos de operar pero menos
+    flexibles. Los microservicios requieren madurez en prácticas DevOps y
+    observabilidad \citep{jamshidi2018microservices}.
+
+  \item \textbf{El gobierno de datos es el mayor diferenciador práctico.}
+    La base de datos compartida de SOA simplifica la consistencia pero
+    encadena los servicios; el modelo \emph{database per service} libera
+    esa cadena a cambio de mayor complejidad en la consistencia eventual
+    \citep{richardson2019microservices}.
+
+  \item \textbf{La decisión arquitectónica debe ser contextual.} Para el
+    sistema de soporte técnico, los microservicios son la alternativa
+    justificada: habilitan escalabilidad independiente, despliegue continuo
+    y resiliencia \citep{alshuqayran2016systematic}.
+
+  \item \textbf{El futuro apunta a la convergencia.} Patrones como
+    \emph{service mesh} (Istio) y plataformas cloud-native están cerrando
+    la brecha operativa entre ambos paradigmas, sugiriendo arquitecturas
+    híbridas adaptativas \citep{di2019architecting, soldani2018pains}.
+\end{enumerate}
+
+% ============================================================
+%  REFERENCIAS BIBLIOGRÁFICAS
+% ============================================================
+\clearpage
+\bibliographystyle{apalike}
+\bibliography{referencias}
+
+\end{document}
